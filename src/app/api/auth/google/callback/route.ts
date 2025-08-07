@@ -47,7 +47,21 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: tokens.expires_in || 3600
+      import type { Credentials } from 'google-auth-library'; // keep if not already present
+
+      // ...inside your handler, after you have `tokens: Credentials`:
+      
+      const secondsUntilExpiry =
+        typeof tokens.expiry_date === 'number'
+          ? Math.max(0, Math.floor((tokens.expiry_date - Date.now()) / 1000))
+          : 3600; // fallback to 1h if Google didn't send expiry
+      
+      response.cookies.set('google_access_token', tokens.access_token ?? '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: secondsUntilExpiry,
+      });
     })
 
     if (tokens.refresh_token) {
