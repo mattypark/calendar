@@ -11,10 +11,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get the base URL dynamically from the request
+    const baseUrl = process.env.NEXTAUTH_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
+
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/google/callback`
+      `${baseUrl}/api/auth/google/callback`
     )
     // Generate the URL for Google OAuth consent screen
     const authUrl = oauth2Client.generateAuthUrl({

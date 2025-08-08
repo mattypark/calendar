@@ -3,24 +3,26 @@ import { google } from 'googleapis'
 import { cookies } from 'next/headers'
 import type { Credentials } from 'google-auth-library'
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/google/callback`
-)
-
 export async function GET(request: NextRequest) {
+  // Get the base URL dynamically from the request
+  const baseUrl = process.env.NEXTAUTH_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
+  
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${baseUrl}/api/auth/google/callback`
+  )
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get('code')
   const error = searchParams.get('error')
 
   if (error) {
     console.error('Google OAuth error:', error)
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?error=auth_failed`)
+    return NextResponse.redirect(`${baseUrl}?error=auth_failed`)
   }
 
   if (!code) {
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?error=no_code`)
+    return NextResponse.redirect(`${baseUrl}?error=no_code`)
   }
 
   try {
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest) {
       : 3600 // fallback to 1h if Google didn't send expiry
     
     // Set cookies with tokens (encrypted in production)
-    const response = NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?connected=true`)
+    const response = NextResponse.redirect(`${baseUrl}?connected=true`)
     
     response.cookies.set('google_access_token', tokens.access_token, {
       httpOnly: true,
@@ -80,6 +82,6 @@ export async function GET(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Token exchange error:', error)
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?error=token_exchange_failed`)
+    return NextResponse.redirect(`${baseUrl}?error=token_exchange_failed`)
   }
 }
