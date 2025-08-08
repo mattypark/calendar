@@ -70,7 +70,7 @@ export default function Home() {
                 localStorage.setItem('sohs-synced-events', JSON.stringify(actuallyVerified))
                 
                 // Update loaded events to reflect actual sync status
-                loadedEvents = loadedEvents.map(event => ({
+                loadedEvents = loadedEvents.map((event: SchoolEvent) => ({
                   ...event,
                   synced: actuallyVerified.includes(event.id)
                 }))
@@ -79,7 +79,7 @@ export default function Home() {
               }
             } else {
               // If no synced events, just mark all as not synced
-              loadedEvents = loadedEvents.map(event => ({
+              loadedEvents = loadedEvents.map((event: SchoolEvent) => ({
                 ...event,
                 synced: false
               }))
@@ -145,7 +145,7 @@ export default function Home() {
           if (verifyResponse.ok) {
             const verifyData = await verifyResponse.json()
             setEvents(verifyData.events || events)
-            console.log(`Post-sync verification: ${verifyData.events.filter(e => e.synced).length} events confirmed in Google Calendar`)
+            console.log(`Post-sync verification: ${verifyData.events.filter((e: SchoolEvent) => e.synced).length} events confirmed in Google Calendar`)
           }
         } catch (verifyError) {
           console.warn('Could not verify events after sync:', verifyError)
@@ -156,9 +156,9 @@ export default function Home() {
         console.error('Sync failed:', data.error)
         alert(`Sync failed: ${data.error || 'Unknown error'}`)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Sync failed:', error)
-      alert(`Sync failed: ${error.message || 'Network error'}`)
+      alert(`Sync failed: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setLoading(false)
     }

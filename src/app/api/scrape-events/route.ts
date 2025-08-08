@@ -35,11 +35,11 @@ async function getAllSchoolEvents(): Promise<SchoolEvent[]> {
     description: `${event.title} - Official South Oldham High School Event`,
     date: event.date,
     startTime: event.startTime,
-    endTime: event.endTime,
+    endTime: 'endTime' in event ? event.endTime : undefined,
     location: event.location || 'South Oldham High School',
     category: event.category,
-    source: event.category === 'athletic' ? 'athletics' : 
-            event.category === 'administrative' ? 'district' : 'school',
+    source: (event.category === 'athletic' ? 'athletics' : 
+            event.category === 'administrative' ? 'district' : 'school') as 'district' | 'school' | 'athletics',
     synced: false,
     selected: false
   }))

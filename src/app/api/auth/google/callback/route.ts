@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { cookies } from 'next/headers'
+import type { Credentials } from 'google-auth-library'
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -40,6 +41,11 @@ export async function GET(request: NextRequest) {
     // Store tokens in httpOnly cookies (in production, use a proper session store)
     const cookieStore = await cookies()
     
+    // Calculate expiry time from expiry_date
+    const secondsUntilExpiry = typeof tokens.expiry_date === 'number'
+      ? Math.max(0, Math.floor((tokens.expiry_date - Date.now()) / 1000))
+      : 3600 // fallback to 1h if Google didn't send expiry
+    
     // Set cookies with tokens (encrypted in production)
     const response = NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?connected=true`)
     
@@ -47,21 +53,7 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      import type { Credentials } from 'google-auth-library'; // keep if not already present
-
-      // ...inside your handler, after you have `tokens: Credentials`:
-      
-      const secondsUntilExpiry =
-        typeof tokens.expiry_date === 'number'
-          ? Math.max(0, Math.floor((tokens.expiry_date - Date.now()) / 1000))
-          : 3600; // fallback to 1h if Google didn't send expiry
-      
-      response.cookies.set('google_access_token', tokens.access_token ?? '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: secondsUntilExpiry,
-      });
+      maxAge: secondsUntilExpiry
     })
 
     if (tokens.refresh_token) {

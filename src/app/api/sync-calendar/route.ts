@@ -39,8 +39,8 @@ function convertSchoolEventToGoogleEvent(schoolEvent: SchoolEvent): GoogleCalend
     endDateTime = schoolEvent.date
   } else {
     // For timed events, convert to proper datetime format
-    const startTime24 = convertTo24Hour(schoolEvent.startTime)
-    const endTime24 = convertTo24Hour(schoolEvent.endTime || schoolEvent.startTime)
+    const startTime24 = convertTo24Hour(schoolEvent.startTime || '9:00 AM')
+    const endTime24 = convertTo24Hour(schoolEvent.endTime || schoolEvent.startTime || '10:00 AM')
     
     startDateTime = `${schoolEvent.date}T${startTime24}:00`
     endDateTime = `${schoolEvent.date}T${endTime24}:00`
