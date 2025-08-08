@@ -1,18 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Analytics } from "@vercel/analytics/next"
-import PHProvider from '@/components/PostHogProvider'
+import { Analytics } from '@vercel/analytics/next'
+import { PostHogProvider } from '@/components/PostHogProvider'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <PHProvider>{children}</PHProvider>
-      </body>
-    </html>
-  )
-}
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -21,17 +12,16 @@ export const metadata: Metadata = {
   keywords: 'South Oldham High School, calendar sync, Google Calendar, school events, SOHS',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-          {children}
-        </div>
+        <PostHogProvider>
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            {children}
+          </div>
+          <Analytics />
+        </PostHogProvider>
       </body>
     </html>
   )
